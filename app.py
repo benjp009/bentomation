@@ -8,8 +8,8 @@ import datetime
 import os
 
 # ----------- USER CONFIGURATION -----------
-NOTION_TOKEN = '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'  # Get it from https://www.notion.so/my-integrations
-DATABASE_ID = '1d34721e121980ef9c4ed1e605c1985b'           # Copy it from the Notion database URL
+NOTION_TOKEN = 'your_notion_secret_token'  # Get it from https://www.notion.so/my-integrations
+DATABASE_ID = 'your_database_id'           # Copy it from the Notion database URL
 
 # ----------- MESSAGE INPUT (simulate ChatGPT message) -----------
 # You can modify this to accept user input or webhook messages
@@ -20,9 +20,9 @@ chatgpt_message = "✅ Cardio bike 30 min"
 # Example format: "✅ Cardio bike 30 min"
 def parse_message(message):
     parts = message.strip("✅ ").split(" ")
-    duration = parts[-2] + " " + parts[-1] if parts[-1].lower() in ["min", "minutes"] else ""
-    task = " ".join(parts[:-2]) if duration else " ".join(parts)
-    return task.strip(), duration.strip()
+    duration = parts[-2] if parts[-1].lower() in ["min", "minutes"] else "0"
+    task = " ".join(parts[:-2]) if parts[-1].lower() in ["min", "minutes"] else message.strip("✅ ")
+    return task.strip(), int(duration)
 
 # ----------- NOTION API REQUEST -----------
 # Sends a new row to the Notion database
@@ -58,5 +58,5 @@ def add_to_notion(task, duration):
 # ----------- RUN -----------
 if __name__ == "__main__":
     task, duration = parse_message(chatgpt_message)
-    print(f"Parsed task: {task} | Duration: {duration}")
+    print(f"Parsed task: {task} | Duration: {duration} min")
     add_to_notion(task, duration)
