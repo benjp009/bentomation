@@ -1,70 +1,62 @@
-# DIY Zapier-like Automation Platform (Starter Template)
-# This script sets up a basic automation flow: a trigger and an action.
-# Trigger: A scheduled task that checks a website's RSS feed.
-# Action: Sends a Telegram message when new content is detected.
+# DIY ChatGPT-to-Notion Logger
+# This script allows you to send a message (like "✅ Cardio bike 30 min") to this script manually,
+# and it will log the data into a Notion database.
+# You can run this locally and trigger it with a command-line message or future webhook.
 
-import requests                      # For making HTTP requests
-import time                          # For adding delays (polling interval)
-from datetime import datetime        # To track time of checks
+import requests
+import datetime
+import os
 
-# CONFIGURATION SECTION (edit these to customize your automation)
-RSS_FEED_URL = 'https://your-feed-url.com/rss'  # Replace with the RSS feed you want to monitor
-TELEGRAM_BOT_TOKEN = 'your-telegram-bot-token'  # Get this from BotFather on Telegram
-TELEGRAM_CHAT_ID = 'your-chat-id'               # Your chat ID or group ID to send messages to
-POLL_INTERVAL = 300                             # Time between checks in seconds (300s = 5 min)
+# ----------- USER CONFIGURATION -----------
+NOTION_TOKEN = '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'  # Get it from https://www.notion.so/my-integrations
+DATABASE_ID = '1d34721e121980ef9c4ed1e605c1985b'           # Copy it from the Notion database URL
 
-# Keep track of already seen items to avoid duplicate notifications
-seen_links = set()
+# ----------- MESSAGE INPUT (simulate ChatGPT message) -----------
+# You can modify this to accept user input or webhook messages
+chatgpt_message = "✅ Cardio bike 30 min"
 
-# Function to send a message via Telegram
-def send_telegram_message(message):
-    url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
+# ----------- MESSAGE PARSING -----------
+# Extract task name and duration from the message
+# Example format: "✅ Cardio bike 30 min"
+def parse_message(message):
+    parts = message.strip("✅ ").split(" ")
+    duration = parts[-2] + " " + parts[-1] if parts[-1].lower() in ["min", "minutes"] else ""
+    task = " ".join(parts[:-2]) if duration else " ".join(parts)
+    return task.strip(), duration.strip()
+
+# ----------- NOTION API REQUEST -----------
+# Sends a new row to the Notion database
+def add_to_notion(task, duration):
+    url = "https://api.notion.com/v1/pages"
+
+    # Notion page payload
     payload = {
-        'chat_id': TELEGRAM_CHAT_ID,
-        'text': message
+        "parent": {"database_id": DATABASE_ID},
+        "properties": {
+            "Task": {"title": [{"text": {"content": task}}]},
+            "Duration": {"rich_text": [{"text": {"content": duration}}]},
+            "Date": {"date": {"start": datetime.date.today().isoformat()}},
+            "Source": {"rich_text": [{"text": {"content": "ChatGPT"}}]}
+        }
     }
-    response = requests.post(url, data=payload)
-    if response.status_code != 200:
-        print(f"Failed to send message: {response.text}")
+
+    # Headers with auth and versioning
+    headers = {
+        "Authorization": f"Bearer {NOTION_TOKEN}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+    }
+
+    # Make the request
+    response = requests.post(url, headers=headers, json=payload)
+
+    if response.status_code == 200:
+        print("✅ Successfully added to Notion!")
     else:
-        print("✅ Message sent to Telegram!")
+        print(f"❌ Failed to add to Notion: {response.status_code}\n{response.text}")
 
-# Function to check RSS feed for new items
-def check_rss_feed():
-    try:
-        response = requests.get(RSS_FEED_URL)
-        if response.status_code != 200:
-            print(f"⚠️ Error fetching RSS feed: {response.status_code}")
-            return
-
-        # Basic parsing using string methods (simple version)
-        content = response.text
-        items = content.split("<item>")[1:]  # Each item is a news/article/event
-
-        for item in items:
-            # Extract the title and link from each <item>
-            title_start = item.find("<title>") + len("<title>")
-            title_end = item.find("</title>")
-            link_start = item.find("<link>") + len("<link>")
-            link_end = item.find("</link>")
-
-            title = item[title_start:title_end].strip()
-            link = item[link_start:link_end].strip()
-
-            # Check if we've already seen this link
-            if link not in seen_links:
-                seen_links.add(link)
-                print(f"🆕 New item: {title}")
-                send_telegram_message(f"📰 {title}\n🔗 {link}")
-
-    except Exception as e:
-        print(f"❌ Exception while checking RSS: {e}")
-
-# MAIN LOOP: run every X seconds
-if __name__ == '__main__':
-    print("🚀 Starting automation...")
-    while True:
-        print(f"\n🔄 Checking RSS at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}...")
-        check_rss_feed()
-        print(f"⏳ Waiting {POLL_INTERVAL} seconds...")
-        time.sleep(POLL_INTERVAL)
+# ----------- RUN -----------
+if __name__ == "__main__":
+    task, duration = parse_message(chatgpt_message)
+    print(f"Parsed task: {task} | Duration: {duration}")
+    add_to_notion(task, duration)
