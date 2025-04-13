@@ -8,8 +8,8 @@ import datetime
 import os
 
 # ----------- USER CONFIGURATION -----------
-NOTION_TOKEN = 'your_notion_secret_token'  # Get it from https://www.notion.so/my-integrations
-DATABASE_ID = 'your_database_id'           # Copy it from the Notion database URL
+NOTION_TOKEN = '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'  # Get it from https://www.notion.so/my-integrations
+DATABASE_ID = '1d34721e121980ef9c4ed1e605c1985b'           # Copy it from the Notion database URL
 
 # ----------- MESSAGE INPUT (simulate ChatGPT message) -----------
 # You can modify this to accept user input or webhook messages
