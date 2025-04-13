@@ -21,8 +21,8 @@ chatgpt_message = "✅ Cardio bike 30 min"
 def parse_message(message):
     parts = message.strip("✅ ").split(" ")
     duration = parts[-2] if parts[-1].lower() in ["min", "minutes"] else "0"
-    task = " ".join(parts[:-2]) if duration else " ".join(parts)
-    return task.strip(), duration.strip()
+    task = " ".join(parts[:-2]) if parts[-1].lower() in ["min", "minutes"] else message.strip("✅ ")
+    return task.strip(), int(duration)
 
 # ----------- NOTION API REQUEST -----------
 # Sends a new row to the Notion database
@@ -58,5 +58,5 @@ def add_to_notion(task, duration):
 # ----------- RUN -----------
 if __name__ == "__main__":
     task, duration = parse_message(chatgpt_message)
-    print(f"Parsed task: {task} | Duration: {duration}")
+    print(f"Parsed task: {task} | Duration: {duration} min")
     add_to_notion(task, duration)
