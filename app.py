@@ -34,7 +34,7 @@ def add_to_notion(task, duration):
         "parent": {"database_id": DATABASE_ID},
         "properties": {
             "Task": {"title": [{"text": {"content": task}}]},
-            "Duration": {"rich_text": [{"text": {"content": duration}}]},
+            "Duration": {"number": duration},
             "Date": {"date": {"start": datetime.date.today().isoformat()}},
             "Source": {"rich_text": [{"text": {"content": "ChatGPT"}}]}
         }
