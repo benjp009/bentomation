@@ -20,7 +20,7 @@ chatgpt_message = "✅ Cardio bike 30 min"
 # Example format: "✅ Cardio bike 30 min"
 def parse_message(message):
     parts = message.strip("✅ ").split(" ")
-    duration = parts[-2] + " " + parts[-1] if parts[-1].lower() in ["min", "minutes"] else ""
+    duration = parts[-2] if parts[-1].lower() in ["min", "minutes"] else "0"
     task = " ".join(parts[:-2]) if duration else " ".join(parts)
     return task.strip(), duration.strip()
 
