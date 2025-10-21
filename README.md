@@ -51,7 +51,7 @@ A comprehensive affiliate marketing platform to manage all your affiliate links,
 
 2. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+   python3 -m pip install -r requirements.txt
    ```
 
 3. **Configure environment (optional)**
@@ -61,8 +61,15 @@ A comprehensive affiliate marketing platform to manage all your affiliate links,
    ```
 
 4. **Run the application**
+
+   Option A - Use the startup script (recommended):
    ```bash
-   python app.py
+   ./start.sh
+   ```
+
+   Option B - Run directly:
+   ```bash
+   python3 app.py
    ```
 
 5. **Access the application**
@@ -192,7 +199,7 @@ bentomation/
 ### Running in Development Mode
 ```bash
 export FLASK_ENV=development
-python app.py
+python3 app.py
 ```
 
 ### Running in Production
